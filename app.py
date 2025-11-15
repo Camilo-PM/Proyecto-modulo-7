@@ -80,11 +80,16 @@ def main():
 				# Si hay muchos puntos, muestrear para mantener la interactividad
 				max_points = 5000
 				if len(scatter_df) > max_points:
-					scatter_df = scatter_df.sample(max_points, random_state=0)
+					sample_indices = scatter_df.sample(max_points, random_state=0).index
+					scatter_df = scatter_df.loc[sample_indices]
 
-				# Colorear por 'type' si existe
+				# Colorear por 'type' si existe (usar índices coincidentes)
 				color_col = "type" if "type" in df.columns else None
-				fig_scatter = px.scatter(scatter_df, x=x_col, y=y_col, color=(df[color_col] if color_col else None), title=f"Scatter: {x_col} vs {y_col}")
+				if color_col:
+					scatter_df[color_col] = df.loc[scatter_df.index, color_col]
+					fig_scatter = px.scatter(scatter_df, x=x_col, y=y_col, color=color_col, title=f"Scatter: {x_col} vs {y_col}")
+				else:
+					fig_scatter = px.scatter(scatter_df, x=x_col, y=y_col, title=f"Scatter: {x_col} vs {y_col}")
 				st.write(f"Gráfico de dispersión `{x_col}` vs `{y_col}` (muestra n={len(scatter_df)})")
 				st.plotly_chart(fig_scatter, use_container_width=True)
 
